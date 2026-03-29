@@ -4,16 +4,24 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { Search, ShoppingCart, User, ChevronDown } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const { cartItems, user } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/?search=${encodeURIComponent(searchQuery)}`;
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh(); // Or router.push('/') if preferred
   };
 
   const cartCount = cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0);
@@ -66,13 +74,13 @@ export default function Navbar() {
                 <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-sm overflow-hidden">
                   <Link href="/orders" className="block px-4 py-2 hover:bg-gray-100 border-b border-gray-100 text-sm">Orders</Link>
                   <Link href="/wishlist" className="block px-4 py-2 hover:bg-gray-100 border-b border-gray-100 text-sm">Wishlist</Link>
-                  <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">Logout</button>
+                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">Logout</button>
                 </div>
               </div>
             ) : (
-              <button className="bg-white text-[#2874f0] px-8 py-1 font-medium rounded-sm shadow-sm hover:bg-gray-100">
+              <Link href="/login" className="bg-white text-[#2874f0] px-8 py-1 font-medium rounded-sm shadow-sm hover:bg-gray-100">
                 Login
-              </button>
+              </Link>
             )}
 
             {/* Become a Seller */}

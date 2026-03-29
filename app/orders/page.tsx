@@ -1,14 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useCart } from '@/context/CartContext';
 import { getOrderHistory } from '@/services/orderService';
 import Link from 'next/link';
+
+function formatINR(amount: number): string {
+  return '₹' + Math.round(amount * 83).toLocaleString('en-IN');
+}
 
 export default function OrdersPage() {
   const { user } = useCart();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const loadOrders = useCallback(async () => {
+    try {
+      if (user) {
+        const data = await getOrderHistory(user.id);
+        setOrders(data || []);
+      }
+    } catch (error) {
+      console.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -16,18 +33,7 @@ export default function OrdersPage() {
     } else {
       setLoading(false);
     }
-  }, [user]);
-
-  const loadOrders = async () => {
-    try {
-      const data = await getOrderHistory(user.id);
-      setOrders(data || []);
-    } catch (error) {
-      console.error("Failed to load orders");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, loadOrders]);
 
   if (loading) return <div className="p-12 text-center text-gray-500">Loading Orders...</div>;
 
@@ -72,7 +78,7 @@ export default function OrdersPage() {
                </div>
                <div>
                   <span className="text-gray-500 uppercase font-medium">Total</span>
-                  <div className="text-gray-800 font-medium">${order.total_amount.toFixed(2)}</div>
+                  <div className="text-gray-800 font-medium">{formatINR(order.total_amount)}</div>
                </div>
                <div>
                  <span className="text-gray-500 uppercase font-medium">Order ID</span>
@@ -94,7 +100,7 @@ export default function OrdersPage() {
                         <Link href={`/product/${product.id}`} className="hover:text-[#2874f0] font-medium text-gray-800 line-clamp-1">
                            {product.name}
                         </Link>
-                        <div className="text-sm text-gray-500 mt-1">Qty: {item.quantity} x ${item.price.toFixed(2)}</div>
+                        <div className="text-sm text-gray-500 mt-1">Qty: {item.quantity} x {formatINR(item.price)}</div>
                       </div>
 
                       <div className="w-1/4 shrink-0 font-medium flex items-center gap-2">

@@ -32,32 +32,32 @@ export default function AddToCartButton({ product }: { product: any }) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2 mt-auto w-full">
+    <>
       {inCart ? (
         <button 
           onClick={() => router.push('/cart')}
-          className="flex-1 py-4 px-8 bg-[#ff9f00] text-white font-medium text-lg flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e68e00] transition-colors"
+          className="flex-1 py-4 px-2 bg-[#ff9f00] text-white font-medium text-sm sm:text-base flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e68e00] transition-colors"
         >
-          <ShoppingCart size={24} />
+          <ShoppingCart size={20} />
           GO TO CART
         </button>
       ) : (
         <button 
           onClick={handleAddToCart}
-          className="flex-1 py-4 px-8 bg-[#ff9f00] text-white font-medium text-lg flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e68e00] transition-colors"
+          className="flex-1 py-4 px-2 bg-[#ff9f00] text-white font-medium text-sm sm:text-base flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e68e00] transition-colors"
         >
-          <ShoppingCart size={24} />
+          <ShoppingCart size={20} />
           ADD TO CART
         </button>
       )}
 
       <button 
         onClick={handleBuyNow}
-        className="flex-1 py-4 px-8 bg-[#fb641b] text-white font-medium text-lg flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e05615] transition-colors"
+        className="flex-1 py-4 px-2 bg-[#fb641b] text-white font-medium text-sm sm:text-base flex items-center justify-center gap-2 rounded-sm shadow hover:bg-[#e05615] transition-colors"
       >
-        <Zap size={24} />
+        <Zap size={20} fill="currentColor" />
         BUY NOW
       </button>
-    </div>
+    </>
   );
 }

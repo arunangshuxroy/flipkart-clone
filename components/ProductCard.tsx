@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useWishlist } from '@/context/WishlistContext';
+import { Heart } from 'lucide-react';
 
 interface ProductCardProps {
   product: {
@@ -41,6 +43,9 @@ export default function ProductCard({ product }: ProductCardProps) {
     product.product_images?.[0]?.image_url ||
     getPicsumUrl(product.id);
 
+  const { toggleWishlist, isInWishlist } = useWishlist() as any;
+  const isWishlisted = isInWishlist(product.id);
+
   const [imgSrc, setImgSrc] = useState(initialImage);
   const [triedFallback, setTriedFallback] = useState(false);
 
@@ -51,6 +56,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     } else {
       setImgSrc(FALLBACK_SVG);
     }
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product.id);
   };
 
   return (
@@ -65,6 +76,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           className="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
           onError={handleImgError}
         />
+        <button 
+          onClick={handleWishlist}
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-white shadow-md border border-gray-100 z-10 hover:scale-110 transition-transform"
+        >
+          <Heart size={18} fill={isWishlisted ? "#ff4343" : "none"} color={isWishlisted ? "#ff4343" : "#c2c2c2"} />
+        </button>
       </div>
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="text-gray-800 font-medium text-sm line-clamp-2 min-h-[40px] mb-1 group-hover:text-[#2874f0]">

@@ -1,6 +1,7 @@
 import { getProductById } from '@/services/productService';
 import ImageCarousel from '@/components/ImageCarousel';
 import AddToCartButton from '@/components/AddToCartButton';
+import WishlistButton from '@/components/WishlistButton';
 import { notFound } from 'next/navigation';
 
 export default async function ProductDetail({ params }: { params: { id: string } }) {
@@ -25,8 +26,9 @@ export default async function ProductDetail({ params }: { params: { id: string }
         <div className="w-full md:w-[40%] flex flex-col gap-4">
           <ImageCarousel images={product.product_images || []} productName={product.name} />
           
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
              <AddToCartButton product={product} />
+             <WishlistButton productId={product.id} />
           </div>
         </div>
 
