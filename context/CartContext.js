@@ -17,6 +17,13 @@ export const CartProvider = ({ children }) => {
       if (session?.user) {
         fetchCart(session.user.id);
       } else {
+        // Load from local storage for guest users
+        const localCart = localStorage.getItem('fk_cart');
+        if (localCart) {
+          try {
+            setCartItems(JSON.parse(localCart));
+          } catch(e) {}
+        }
         setLoading(false);
       }
     });
@@ -27,7 +34,9 @@ export const CartProvider = ({ children }) => {
       if (session?.user) {
         fetchCart(session.user.id);
       } else {
-        setCartItems([]);
+        // Switch back to local storage on logout
+        const localCart = localStorage.getItem('fk_cart');
+        setCartItems(localCart ? JSON.parse(localCart) : []);
       }
     });
 
@@ -83,10 +92,36 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1) => {
     if (!user) {
-      alert("Please login to add items to cart!");
+      // GUEST MODE: Add to LocalStorage
+      try {
+        const { data: product } = await supabase
+          .from('products')
+          .select('id, name, price, product_images(image_url)')
+          .eq('id', productId)
+          .single();
+          
+        if (!product) return;
+        
+        setCartItems(prev => {
+          const existing = prev.find(item => item.products.id === productId);
+          let newItems;
+          if (existing) {
+            newItems = prev.map(item => 
+              item.products.id === productId ? { ...item, quantity: item.quantity + quantity } : item
+            );
+          } else {
+            newItems = [...prev, { id: 'local_' + Date.now(), quantity, product_id: productId, products: product }];
+          }
+          localStorage.setItem('fk_cart', JSON.stringify(newItems));
+          return newItems;
+        });
+      } catch (e) {
+        console.error("Local cart error:", e);
+      }
       return;
     }
     
+    // LOGGED IN MODE: Supabase
     try {
       // First, ensure cart exists
       let { data: cartData } = await supabase
@@ -128,6 +163,15 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (cartItemId) => {
+    if (!user) {
+      setCartItems(prev => {
+        const newItems = prev.filter(item => item.id !== cartItemId);
+        localStorage.setItem('fk_cart', JSON.stringify(newItems));
+        return newItems;
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -144,6 +188,16 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = async (cartItemId, quantity) => {
     if (quantity < 1) return;
+    
+    if (!user) {
+      setCartItems(prev => {
+        const newItems = prev.map(item => item.id === cartItemId ? { ...item, quantity } : item);
+        localStorage.setItem('fk_cart', JSON.stringify(newItems));
+        return newItems;
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('cart_items')
